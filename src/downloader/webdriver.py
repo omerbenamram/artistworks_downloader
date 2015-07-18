@@ -18,14 +18,6 @@ logger = logbook.Logger(__name__)
 lesson = namedtuple(typename='lesson', field_names=['id', 'name'])
 
 
-def initialize_webdriver(browser=Chrome):
-    """
-    :param browser: a selenium webdriver class
-    :return: webdriver instance
-    """
-    return browser()
-
-
 def login_to_artistworks(username, password):
     logger.info('Connection to artistworks with user {}'.format(username))
     driver.get(ARTISTWORKS_LOGIN)
