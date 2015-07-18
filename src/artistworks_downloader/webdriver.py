@@ -5,7 +5,7 @@ import time
 import logbook
 from bs4 import BeautifulSoup
 from selenium.common.exceptions import TimeoutException, WebDriverException
-from selenium.webdriver import Chrome
+from selenium.webdriver import Chrome, Firefox
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -29,8 +29,11 @@ class LessonLink(namedtuple('LessonLink', field_names=['name', 'link'])):
 
 
 class ArtistWorkScraper(object):
-    def __init__(self, fetch_extras=False):
-        self.driver = Chrome()
+    def __init__(self, fetch_extras=False, use_firefox=False):
+        if use_firefox:
+            self.driver = Firefox
+        else:
+            self.driver = Chrome()
         self.fetch_extras = fetch_extras
 
     def login_to_artistworks(self, username, password):

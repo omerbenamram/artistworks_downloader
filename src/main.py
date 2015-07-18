@@ -21,6 +21,9 @@ parser.add_argument('--fetch_extras', default=False, action='store_true',
                     help='whether to download extra lesson objects (such as slow motion etc..)')
 parser.add_argument('--fetch_masterclasses', default=False, action='store_true',
                     help='whether to download student exchanges for lessons')
+parser.add_argument('--use_firefox', default=False, action='store_true',
+                    help='whether to use firefox instead of chrome webdriver')
+
 
 links_group = parser.add_mutually_exclusive_group(required=True)
 links_group.add_argument('--department', type=int, nargs=1,
@@ -55,7 +58,7 @@ def download_link(link, output_path):
 
 
 def main():
-    scraper = ArtistWorkScraper(fetch_extras=args.fetch_extras)
+    scraper = ArtistWorkScraper(fetch_extras=args.fetch_extras, use_firefox=args.use_firefox)
     scraper.login_to_artistworks(username=args.username, password=args.password)
 
     if args.only_lessons:
