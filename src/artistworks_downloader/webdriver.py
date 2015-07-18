@@ -15,8 +15,17 @@ from .constants import ARTISTWORKS_LOGIN, ARTISTWORKS_LESSON_BASE, ARTISTWORKS_D
 
 logger = logbook.Logger(__name__)
 
-Lesson = namedtuple(typename='lesson', field_names=['id', 'name', 'links', 'masterclass_ids'])
-Masterclass = namedtuple(typename='lesson', field_names=['id', 'name', 'links'])
+
+class Lesson(namedtuple('Lesson', field_names=['id', 'name', 'links', 'masterclass_ids'])):
+    pass
+
+
+class Masterclass(namedtuple('Masterclass', field_names=['id', 'name', 'links'])):
+    pass
+
+
+class LessonLink(namedtuple('LessonLink', field_names=['name', 'link'])):
+    pass
 
 
 class ArtistWorkScraper(object):
@@ -46,12 +55,12 @@ class ArtistWorkScraper(object):
             self.driver.get(ARTISTWORKS_MASTERCLASS_BASE + str(masterclass_id))
 
         lesson_name_element = self.driver.find_element_by_xpath('//*[@id="tabs-wrapper"]/h2')
-        lesson_links = {}
+        lesson_links = []
         elements = WebDriverWait(self.driver, 15).until(
             EC.presence_of_all_elements_located((By.CLASS_NAME, 'playlist-item')))
 
         for element in elements:
-            lesson_links[element.text] = self._get_video_link_for_element(element)
+            lesson_links.append(LessonLink(element.text, self._get_video_link_for_element(element)))
 
         return Masterclass(masterclass_id, lesson_name_element.text, lesson_links)
 
@@ -61,12 +70,12 @@ class ArtistWorkScraper(object):
             self.driver.get(ARTISTWORKS_LESSON_BASE + str(lesson_id))
 
         lesson_name_element = self.driver.find_element_by_xpath('//*[@id="tabs-wrapper"]/h2')
-        lesson_links = {}
+        lesson_links = []
         elements = WebDriverWait(self.driver, 15).until(
             EC.presence_of_all_elements_located((By.CLASS_NAME, 'playlist-item')))
 
         for element in elements:
-            lesson_links[element.text] = self._get_video_link_for_element(element)
+            lesson_links.append(LessonLink(element.text, self._get_video_link_for_element(element)))
             if not self.fetch_extras:
                 break
 

@@ -1,8 +1,8 @@
 import argparse
 import asyncio
 import os
-from pathlib import Path
 import shelve
+from pathlib import Path
 
 import logbook
 
@@ -34,12 +34,21 @@ lessons_db = shelve.open(LESSONS_DB_PATH)
 masterclasses_db = shelve.open(MASTERCLASSES_DB_PATH)
 
 
+def download_link(link, output_path):
+    if not output_path.exists():
+        os.makedirs(str(output_path))
+
+    filename = get_valid_filename(link.name) + '.mp4'
+    logger.debug('downloading {} to folder {}'.format(filename, str(output_path)))
+    return async_download_video(video_link=link.link,
+                                folder=str(output_path),
+                                filename=filename)
+
+
 def main():
     args = parser.parse_args()
     scraper = ArtistWorkScraper(fetch_extras=args.fetch_extras)
     scraper.login_to_artistworks(username=args.username, password=args.password)
-
-    lessons = []
 
     if args.only_lessons:
         lesson_ids = args.only_lessons
@@ -49,51 +58,31 @@ def main():
         lesson_ids = scraper.get_all_lesson_ids_for_department(args.department)
 
     for lesson_id in lesson_ids:
-        if lesson_id not in lessons_db.keys():
+        if lesson_id not in lessons_db:
             lessons_db[lesson_id] = scraper.get_lesson_by_id(lesson_id)
-        else:
-            logger.debug('Loading lesson {} from cache')
-            lessons.append(lessons_db[lesson_id])
 
-    masterclasses = {}
-    if args.fetch_masterclasses:
-        for lesson in lessons:
-            for masterclass_id in lesson.masterclass_ids:
-                if masterclass_id not in masterclasses_db.keys():
-                    masterclasses[masterclass_id] = scraper.get_masterclass_by_id(masterclass_id)
-                else:
-                    logger.debug('Loading masterclass {} from cache')
-                    masterclasses[masterclass_id] = masterclasses_db[masterclass_id]
+        if args.fetch_masterclasses:
+            for masterclass_id in lessons_db[lesson_id].masterclass_ids:
+                if masterclass_id not in masterclasses_db:
+                    masterclasses_db[masterclass_id] = scraper.get_masterclass_by_id(masterclass_id)
 
     # start downlaoding
     loop = asyncio.get_event_loop()
 
     futures = []
-    for lesson in lessons:
+    for lesson in lessons_db.values():
         output_path = Path(args.output_dir).joinpath('Paul Gilbert').joinpath(department_name).joinpath(
             get_valid_filename(lesson.name))
 
-        if not output_path.exists():
-            os.makedirs(str(output_path))
+        for lesson_link in lesson.links:
+            futures.append(download_link(lesson_link, output_path))
 
-        for lesson_item in lesson.links.items():
-            filename = get_valid_filename(lesson_item[0]) + '.mp4'
-            logger.debug('downloading {} to folder {}'.format(filename, str(output_path)))
-            futures.append(async_download_video(video_link=lesson_item[1],
-                                                folder=str(output_path),
-                                                filename=filename))
         if args.fetch_masterclasses:
-            for masterclass in masterclasses.values():
-                output_path = output_path.joinpath(masterclass.name)
-                if not output_path.exists():
-                    os.makedirs(str(output_path))
-
-                for masterclass_links_dict in masterclass.links.items():
-                    filename = get_valid_filename(masterclass_links_dict[0]) + '.mp4'
-                    logger.debug('downloading {} to folder {}'.format(filename, str(output_path)))
-                    futures.append(async_download_video(video_link=masterclass_links_dict[1],
-                                                        folder=str(output_path),
-                                                        filename=filename))
+            for masterclass_id in lesson.masterclass_ids:
+                masterclass = masterclasses_db[masterclass_id]
+                for masterclass_link in masterclass.links:
+                    output_path = output_path.joinpath(masterclass.name)
+                    futures.append(download_link(masterclass_link, output_path))
 
     f = wait_with_progress(futures)
     loop.run_until_complete(f)

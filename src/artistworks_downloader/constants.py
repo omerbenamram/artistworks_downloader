@@ -5,8 +5,8 @@ ARTISTWORKS_LESSON_BASE = 'http://artistworks.com/lesson/'
 ARTISTWORKS_DEPARTMENT_BASE = 'http://artistworks.com/media-department/'
 ARTISTWORKS_MASTERCLASS_BASE = 'http://artistworks.com/masterclass/'
 
-LESSONS_DB_PATH = str(Path(__file__).parent.joinpath('lessons.db'))
-MASTERCLASSES_DB_PATH = str(Path(__file__).parent.joinpath('masterclasses.db'))
-
 DEFAULT_OUTPUT_DIRECTORY = r'C:\Temp\ArtistWorks'
 MAX_CONCURRENT_DOWNLOADS = 5
+
+LESSONS_DB_PATH = str(Path(DEFAULT_OUTPUT_DIRECTORY).joinpath('lessons.db'))
+MASTERCLASSES_DB_PATH = str(Path(DEFAULT_OUTPUT_DIRECTORY).joinpath('masterclasses.db'))
