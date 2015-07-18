@@ -107,7 +107,7 @@ def main():
                     output_path = output_path.joinpath(masterclass.name)
                     futures.append(download_link(masterclass_link, output_path))
 
-    f = wait_with_progress(filter(None, futures))
+    f = wait_with_progress(list(filter(None, futures)))
     loop.run_until_complete(f)
 
     scraper.exit()
