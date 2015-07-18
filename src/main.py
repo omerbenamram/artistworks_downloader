@@ -23,7 +23,8 @@ parser.add_argument('--fetch_masterclasses', default=False, action='store_true',
                     help='whether to download student exchanges for lessons')
 parser.add_argument('--use_firefox', default=False, action='store_true',
                     help='whether to use firefox instead of chrome webdriver')
-
+parser.add_argument('--use_virtual_display', default=False, action='store_true',
+                    help='whether to use a virtual display for running in headless mode (linux only)')
 
 links_group = parser.add_mutually_exclusive_group(required=True)
 links_group.add_argument('--department', type=int, nargs=1,
@@ -58,6 +59,12 @@ def download_link(link, output_path):
 
 
 def main():
+    if args.use_virtual_display:
+        import pyvirtualdisplay
+
+        display = pyvirtualdisplay.Display(visible=0, size=(800, 600))
+        display.start()
+
     scraper = ArtistWorkScraper(fetch_extras=args.fetch_extras, use_firefox=args.use_firefox)
     scraper.login_to_artistworks(username=args.username, password=args.password)
 

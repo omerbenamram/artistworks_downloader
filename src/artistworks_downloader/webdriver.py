@@ -31,7 +31,7 @@ class LessonLink(namedtuple('LessonLink', field_names=['name', 'link'])):
 class ArtistWorkScraper(object):
     def __init__(self, fetch_extras=False, use_firefox=False):
         if use_firefox:
-            self.driver = Firefox
+            self.driver = Firefox()
         else:
             self.driver = Chrome()
         self.fetch_extras = fetch_extras
