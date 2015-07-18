@@ -6,7 +6,7 @@ from pathlib import Path
 
 import logbook
 
-from artistworks_downloader.constants import DEFAULT_OUTPUT_DIRECTORY, LESSONS_DB_PATH, MASTERCLASSES_DB_PATH
+from artistworks_downloader.constants import DEFAULT_OUTPUT_DIRECTORY
 from artistworks_downloader.webdriver import ArtistWorkScraper
 from artistworks_downloader.video_downloader import async_download_video, wait_with_progress, get_valid_filename
 
@@ -30,6 +30,15 @@ links_group.add_argument('--only_lessons', type=str, nargs='*',
 
 logger = logbook.Logger(__name__)
 
+args = parser.parse_args()
+
+LESSONS_DB_PATH = str(Path(args.output_dir).joinpath('lessons.db'))
+MASTERCLASSES_DB_PATH = str(Path(args.output_dir).joinpath('masterclasses.db'))
+
+
+if not os.path.exists(args.output_dir):
+    os.makedirs(args.output_dir)
+
 lessons_db = shelve.open(LESSONS_DB_PATH)
 masterclasses_db = shelve.open(MASTERCLASSES_DB_PATH)
 
@@ -46,7 +55,6 @@ def download_link(link, output_path):
 
 
 def main():
-    args = parser.parse_args()
     scraper = ArtistWorkScraper(fetch_extras=args.fetch_extras)
     scraper.login_to_artistworks(username=args.username, password=args.password)
 
