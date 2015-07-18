@@ -53,7 +53,7 @@ def download_link(link, output_path):
 
     filename = get_valid_filename(link.name) + '.mp4'
 
-    if Path.joinpath(filename).exists():
+    if output_path.joinpath(filename).exists():
         logger.debug('file {} exists in disk, not downloading'.format(filename))
         return None
 
