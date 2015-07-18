@@ -69,6 +69,9 @@ def main():
         if args.fetch_masterclasses:
             for masterclass in masterclasses.values():
                 output_path = output_path.joinpath(masterclass.name)
+                if not output_path.exists():
+                    os.makedirs(str(output_path))
+                    
                 for masterclass_links_dict in masterclass.links.items():
                     filename = get_valid_filename(masterclass_links_dict[0]) + '.mp4'
                     logger.debug('downloading {} to folder {}'.format(filename, str(output_path)))

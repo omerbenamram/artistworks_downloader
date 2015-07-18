@@ -20,10 +20,9 @@ Masterclass = namedtuple(typename='lesson', field_names=['id', 'name', 'links'])
 
 
 class ArtistWorkScraper(object):
-    def __init__(self, fetch_extras=False, fetch_masterclasses=False):
+    def __init__(self, fetch_extras=False):
         self.driver = Chrome()
         self.fetch_extras = fetch_extras
-        self.fetch_masterclasses = fetch_masterclasses
 
     def login_to_artistworks(self, username, password):
         logger.info('Connecting to artistworks with user {}'.format(username))
