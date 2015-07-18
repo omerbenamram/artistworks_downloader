@@ -27,7 +27,7 @@ parser.add_argument('--use_virtual_display', default=False, action='store_true',
                     help='whether to use a virtual display for running in headless mode (linux only)')
 
 links_group = parser.add_mutually_exclusive_group(required=True)
-links_group.add_argument('--department', type=int, nargs=1,
+links_group.add_argument('--department', type=int,
                          help='Department number to be scraped')
 links_group.add_argument('--only_lessons', type=str, nargs='*',
                          help='download only specified lessons')
