@@ -52,6 +52,11 @@ def download_link(link, output_path):
         os.makedirs(str(output_path))
 
     filename = get_valid_filename(link.name) + '.mp4'
+
+    if Path.joinpath(filename).exists():
+        logger.debug('file {} exists in disk, not downloading'.format(filename))
+        return None
+
     logger.debug('downloading {} to folder {}'.format(filename, str(output_path)))
     return async_download_video(video_link=link.link,
                                 folder=str(output_path),
@@ -102,7 +107,7 @@ def main():
                     output_path = output_path.joinpath(masterclass.name)
                     futures.append(download_link(masterclass_link, output_path))
 
-    f = wait_with_progress(futures)
+    f = wait_with_progress(filter(None, futures))
     loop.run_until_complete(f)
 
     scraper.exit()
