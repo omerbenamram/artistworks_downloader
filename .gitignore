@@ -1,3 +1,4 @@
 .idea/
 *.pyc
 src/artistworks_downloader.egg-info/
+src/artistworks_downloader/*.db.*

@@ -105,12 +105,7 @@ class ArtistWorkScraper(object):
         department_name_element = self.driver.find_element_by_xpath('//*[@id="tabs-wrapper"]/h2')
         return department_name_element.text
 
-    def get_all_lessons_for_department(self, department_id):
-        """
-        :param department_id:
-        :return: a list of tuples containing lesson_id, lesson_name
-        :rtype: list(lesson)
-        """
+    def get_all_lesson_ids_for_department(self, department_id):
         logger.info('grabbing all links for department {}'.format(department_id))
         if not self.driver.current_url == (ARTISTWORKS_DEPARTMENT_BASE + str(department_id)):
             self.driver.get(ARTISTWORKS_DEPARTMENT_BASE + str(department_id))
@@ -122,10 +117,7 @@ class ArtistWorkScraper(object):
         lesson_ids = map(lambda x: re.findall('\d+', x['href'])[0],
                          soup.find_all('a', href=re.compile('/lesson/(\d+)')))
 
-        lessons = [self.get_lesson_by_id(lesson_id) for lesson_id in lesson_ids]
-
-        logger.info('found {} lessons!'.format(len(lessons)))
-        return lessons
+        return lesson_ids
 
     def exit(self):
         self.driver.close()

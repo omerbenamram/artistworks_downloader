@@ -1,16 +1,14 @@
 import os
 
 import asyncio
-import shelve
+import re
 
 import aiohttp
-import re
 import tqdm
 
-from .constants import MAX_CONCURRENT_DOWNLOADS, DB_PATH
+from .constants import MAX_CONCURRENT_DOWNLOADS
 
 sem = asyncio.Semaphore(MAX_CONCURRENT_DOWNLOADS)
-db = shelve.open(DB_PATH)
 
 
 @asyncio.coroutine
