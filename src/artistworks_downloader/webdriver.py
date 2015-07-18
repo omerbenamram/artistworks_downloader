@@ -15,12 +15,13 @@ from .constants import ARTISTWORKS_LOGIN, ARTISTWORKS_LESSON_BASE, ARTISTWORKS_D
 
 logger = logbook.Logger(__name__)
 
-Lesson = namedtuple(typename='lesson', field_names=['id', 'name'])
+Lesson = namedtuple(typename='lesson', field_names=['id', 'name', 'links'])
 
 
 class ArtistWorkScraper(object):
-    def __init__(self):
+    def __init__(self, fetch_extras=False):
         self.driver = Chrome()
+        self.fetch_extras = fetch_extras
 
     def login_to_artistworks(self, username, password):
         logger.info('Connecting to artistworks with user {}'.format(username))
@@ -44,30 +45,35 @@ class ArtistWorkScraper(object):
             self.driver.get(ARTISTWORKS_LESSON_BASE + str(lesson_id))
 
         lesson_name_element = self.driver.find_element_by_xpath('//*[@id="tabs-wrapper"]/h2')
-        return Lesson(lesson_id, lesson_name_element.text)
+        lesson_links = {}
+        elements = WebDriverWait(self.driver, 15).until(
+            EC.presence_of_all_elements_located((By.CLASS_NAME, 'playlist-item')))
 
-    def get_video_link_for_lesson(self, lesson):
-        logger.info('grabbing link for lesson {}'.format(lesson.id))
-        if not self.driver.current_url == (ARTISTWORKS_LESSON_BASE + str(lesson.id)):
-            self.driver.get(ARTISTWORKS_LESSON_BASE + str(lesson.id))
+        for element in elements:
+            lesson_links[element.text] = self._get_video_link_for_element(element)
+            if not self.fetch_extras:
+                break
 
-        WebDriverWait(self.driver, 15).until(EC.element_to_be_clickable((By.CSS_SELECTOR, '#player0')))
+        return Lesson(lesson_id, lesson_name_element.text, lesson_links)
+
+    def _get_video_link_for_element(self, element):
+        logger.info('grabbing links for element {}'.format(element))
+        element.click()
         # small sleep is still needed for some js to initialize
         i = 0
         link = None
-        while i < 3:
+        while i <= 3:
             try:
                 time.sleep(5)
+                self.driver.execute_script("return jwplayer().stop()")
                 link = self.driver.execute_script("return jwplayer().getPlaylistItem()['file']")
             except WebDriverException as e:
                 logger.exception(e)
                 logger.debug('waiting and retrying')
-                time.sleep(5)
                 i += 1
-
             break
         if not link:
-            raise Exception('Could not find link for lesson id {}'.format(lesson.id))
+            raise Exception('Could not find link!')
 
         logger.info('found link {}'.format(link))
         return link
@@ -92,10 +98,13 @@ class ArtistWorkScraper(object):
             EC.presence_of_element_located((By.CSS_SELECTOR, '#media-group-table > table.sticky-enabled.sticky-table')))
         content = self.driver.page_source
         soup = BeautifulSoup(content)
-        links = list(map(lambda x: Lesson(id=re.findall('\d+', x['href'])[0], name=x.text),
-                         soup.find_all('a', href=re.compile('/lesson/(\d+)'))))
-        logger.info('found {} links!'.format(len(links)))
-        return links
+        lesson_ids = map(lambda x: re.findall('\d+', x['href'])[0],
+                         soup.find_all('a', href=re.compile('/lesson/(\d+)')))
+
+        lessons = [self.get_lesson_by_id(lesson_id) for lesson_id in lesson_ids]
+
+        logger.info('found {} lessons!'.format(len(lessons)))
+        return lessons
 
     def exit(self):
         self.driver.close()
