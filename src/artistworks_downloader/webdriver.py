@@ -59,7 +59,7 @@ class ArtistWorkScraper(object):
 
         lesson_name_element = self.driver.find_element_by_xpath('//*[@id="tabs-wrapper"]/h2')
         lesson_links = []
-        elements = WebDriverWait(self.driver, 15).until(
+        elements = WebDriverWait(self.driver, 60).until(
             EC.presence_of_all_elements_located((By.CLASS_NAME, 'playlist-item')))
 
         for element in elements:
@@ -74,7 +74,7 @@ class ArtistWorkScraper(object):
 
         lesson_name_element = self.driver.find_element_by_xpath('//*[@id="tabs-wrapper"]/h2')
         lesson_links = []
-        elements = WebDriverWait(self.driver, 15).until(
+        elements = WebDriverWait(self.driver, 60).until(
             EC.presence_of_all_elements_located((By.CLASS_NAME, 'playlist-item')))
 
         for element in elements:
@@ -122,7 +122,7 @@ class ArtistWorkScraper(object):
         if not self.driver.current_url == (ARTISTWORKS_DEPARTMENT_BASE + str(department_id)):
             self.driver.get(ARTISTWORKS_DEPARTMENT_BASE + str(department_id))
 
-        WebDriverWait(self.driver, 15).until(
+        WebDriverWait(self.driver, 60).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, '#media-group-table > table.sticky-enabled.sticky-table')))
         content = self.driver.page_source
         soup = BeautifulSoup(content)
