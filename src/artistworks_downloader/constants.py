@@ -10,4 +10,4 @@ DEFAULT_OUTPUT_DIRECTORY = Path(os.path.expanduser('~')).joinpath('ArtistWorks')
 
 MAX_CONCURRENT_DOWNLOADS = 5
 
-LOG_PATH = Path(__file__).joinpath('artistwork_downloader.log')
+LOG_PATH = str(Path(__file__).parent.joinpath('artistwork_downloader.log'))
