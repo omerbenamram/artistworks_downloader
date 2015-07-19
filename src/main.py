@@ -6,7 +6,7 @@ from pathlib import Path
 
 import logbook
 
-from artistworks_downloader.constants import DEFAULT_OUTPUT_DIRECTORY
+from artistworks_downloader.constants import DEFAULT_OUTPUT_DIRECTORY, LOG_PATH
 from artistworks_downloader.webdriver import ArtistWorkScraper
 from artistworks_downloader.video_downloader import async_download_video, wait_with_progress, get_valid_filename
 
@@ -33,6 +33,8 @@ links_group.add_argument('--only_lessons', type=str, nargs='*',
                          help='download only specified lessons')
 
 logger = logbook.Logger(__name__)
+logger.handlers.append(logbook.FileHandler(LOG_PATH, bubble=True))
+logger.handlers.append(logbook.StderrHandler())
 
 args = parser.parse_args()
 

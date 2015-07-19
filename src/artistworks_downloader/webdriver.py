@@ -11,9 +11,11 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 from .constants import ARTISTWORKS_LOGIN, ARTISTWORKS_LESSON_BASE, ARTISTWORKS_DEPARTMENT_BASE, \
-    ARTISTWORKS_MASTERCLASS_BASE
+    ARTISTWORKS_MASTERCLASS_BASE, LOG_PATH
 
 logger = logbook.Logger(__name__)
+logger.handlers.append(logbook.FileHandler(LOG_PATH, bubble=True))
+logger.handlers.append(logbook.StderrHandler())
 
 
 class Lesson(namedtuple('Lesson', field_names=['id', 'name', 'links', 'masterclass_ids'])):
