@@ -61,8 +61,12 @@ class ArtistWorkScraper(object):
 
         lesson_name_element = self.driver.find_element_by_xpath('//*[@id="tabs-wrapper"]/h2')
         lesson_links = []
-        elements = WebDriverWait(self.driver, 15).until(
-            EC.presence_of_all_elements_located((By.CLASS_NAME, 'playlist-item')))
+        try:
+            elements = WebDriverWait(self.driver, 15).until(
+                EC.presence_of_all_elements_located((By.CLASS_NAME, 'playlist-item')))
+        except TimeoutException:
+            # for masterclass, i don't care about those without artist response
+            return Masterclass(masterclass_id, lesson_name_element.text, lesson_links)
 
         for element in elements:
             lesson_links.append(LessonLink(element.text, self._get_video_link_for_element(element)))
