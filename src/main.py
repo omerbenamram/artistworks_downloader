@@ -1,5 +1,4 @@
 import argparse
-import asyncio
 import os
 import shelve
 from pathlib import Path
@@ -8,7 +7,7 @@ import logbook
 
 from artistworks_downloader.constants import DEFAULT_OUTPUT_DIRECTORY, LOG_PATH
 from artistworks_downloader.webdriver import ArtistWorkScraper
-from artistworks_downloader.video_downloader import async_download_video, wait_with_progress, get_valid_filename
+from artistworks_downloader.video_downloader import AsyncDownloader, get_valid_filename
 
 parser = argparse.ArgumentParser(description='Grabs videos from artistworks')
 parser.add_argument('--username', type=str, required=True,
@@ -41,28 +40,11 @@ args = parser.parse_args()
 LESSONS_DB_PATH = str(Path(args.output_dir).joinpath('lessons.db'))
 MASTERCLASSES_DB_PATH = str(Path(args.output_dir).joinpath('masterclasses.db'))
 
-
 if not os.path.exists(args.output_dir):
     os.makedirs(args.output_dir)
 
 lessons_db = shelve.open(LESSONS_DB_PATH)
 masterclasses_db = shelve.open(MASTERCLASSES_DB_PATH)
-
-
-def download_link(link, output_folder_path):
-    if not output_folder_path.exists():
-        os.makedirs(str(output_folder_path))
-
-    filename = get_valid_filename(link.name) + '.mp4'
-
-    if output_folder_path.joinpath(filename).exists():
-        logger.debug('file {} exists in disk, not downloading'.format(filename))
-        return None
-
-    logger.debug('downloading {} to folder {}'.format(filename, str(output_folder_path)))
-    return async_download_video(video_link=link.link,
-                                folder=str(output_folder_path),
-                                filename=filename)
 
 
 def main():
@@ -92,24 +74,23 @@ def main():
                     masterclasses_db[masterclass_id] = scraper.get_masterclass_by_id(masterclass_id)
 
     # start downlaoding
-    loop = asyncio.get_event_loop()
 
-    futures = []
+    downloader = AsyncDownloader()
+
     for lesson in lessons_db.values():
         lesson_output_folder_path = Path(args.output_dir).joinpath('Paul Gilbert').joinpath(department_name).joinpath(
             get_valid_filename(lesson.name))
 
         for lesson_link in lesson.links:
-            futures.append(download_link(lesson_link, lesson_output_folder_path))
+            downloader.download_link(lesson_link, lesson_output_folder_path)
 
         if args.fetch_masterclasses:
             for masterclass_id in lesson.masterclass_ids:
                 masterclass = masterclasses_db[masterclass_id]
                 masterclass_output_folder_path = lesson_output_folder_path.joinpath(masterclass.name)
                 for masterclass_link in masterclass.links:
-                    futures.append(download_link(masterclass_link, masterclass_output_folder_path))
+                    downloader.download_link(masterclass_link, masterclass_output_folder_path)
 
-    f = wait_with_progress(list(filter(None, futures)))
-    loop.run_until_complete(f)
+    downloader.run()
 
     scraper.exit()
