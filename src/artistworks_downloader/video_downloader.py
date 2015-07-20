@@ -17,13 +17,13 @@ logger.handlers.append(logbook.StderrHandler())
 class AsyncDownloader(object):
     def __init__(self):
         self.loop = asyncio.get_event_loop()
-        self.connector = aiohttp.TCPConnector(share_cookies=True, loop=self.loop)
         self.coros = []
+        self.connector = aiohttp.BaseConnector(force_close=True)
         self.sem = asyncio.Semaphore(MAX_CONCURRENT_DOWNLOADS)
 
     @asyncio.coroutine
     def async_download_video(self, video_link, chunk_size=1024, folder=r'C:\Temp', filename=''):
-        with aiohttp.ClientSession(connector=self.connector) as session, (yield from self.sem):
+        with aiohttp.ClientSession() as session, (yield from self.sem):
             vid = yield from session.get(video_link)
             if not filename:
                 filename = video_link.split('/')[-1]
@@ -33,6 +33,7 @@ class AsyncDownloader(object):
                     if not chunk:
                         break
                     fd.write(chunk)
+        vid.release()
         logger.info('Finished downloading file {}'.format(filename))
 
     @asyncio.coroutine
