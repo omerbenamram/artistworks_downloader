@@ -49,19 +49,19 @@ lessons_db = shelve.open(LESSONS_DB_PATH)
 masterclasses_db = shelve.open(MASTERCLASSES_DB_PATH)
 
 
-def download_link(link, output_path):
-    if not output_path.exists():
-        os.makedirs(str(output_path))
+def download_link(link, output_folder_path):
+    if not output_folder_path.exists():
+        os.makedirs(str(output_folder_path))
 
     filename = get_valid_filename(link.name) + '.mp4'
 
-    if output_path.joinpath(filename).exists():
+    if output_folder_path.joinpath(filename).exists():
         logger.debug('file {} exists in disk, not downloading'.format(filename))
         return None
 
-    logger.debug('downloading {} to folder {}'.format(filename, str(output_path)))
+    logger.debug('downloading {} to folder {}'.format(filename, str(output_folder_path)))
     return async_download_video(video_link=link.link,
-                                folder=str(output_path),
+                                folder=str(output_folder_path),
                                 filename=filename)
 
 
@@ -96,18 +96,18 @@ def main():
 
     futures = []
     for lesson in lessons_db.values():
-        output_path = Path(args.output_dir).joinpath('Paul Gilbert').joinpath(department_name).joinpath(
+        lesson_output_folder_path = Path(args.output_dir).joinpath('Paul Gilbert').joinpath(department_name).joinpath(
             get_valid_filename(lesson.name))
 
         for lesson_link in lesson.links:
-            futures.append(download_link(lesson_link, output_path))
+            futures.append(download_link(lesson_link, lesson_output_folder_path))
 
         if args.fetch_masterclasses:
             for masterclass_id in lesson.masterclass_ids:
                 masterclass = masterclasses_db[masterclass_id]
+                masterclass_output_folder_path = lesson_output_folder_path.joinpath(masterclass.name)
                 for masterclass_link in masterclass.links:
-                    output_path = output_path.joinpath(masterclass.name)
-                    futures.append(download_link(masterclass_link, output_path))
+                    futures.append(download_link(masterclass_link, masterclass_output_folder_path))
 
     f = wait_with_progress(list(filter(None, futures)))
     loop.run_until_complete(f)
