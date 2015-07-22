@@ -1,8 +1,10 @@
-import pytest
 import random
 import py
+
 from artistworks_downloader.video_downloader import AsyncDownloader
 from artistworks_downloader.webdriver import LessonLink
+
+Path = py.path.local
 
 args = [(LessonLink(name='Fast Descending Pentatonic Pattern 1', link='http://pgsgcdn.05.awimedia.net/media/0/2/8/227_34028_57213_23fastdescendpentatonic_awlf_114.mp4'),
          r'C:\Users\Omer\ArtistWorks\Paul Gilbert\Misc lessons\Fast_Descending_Pentatonic_Pattern_1'),
@@ -16,14 +18,9 @@ links = [LessonLink(name='Fast Descending Pentatonic Pattern 1', link='http://pg
         LessonLink(name="Paul's Response", link='http://pgsgcdn.05.awimedia.net/media/4/0/7/9182_101407_135131_00047_112.mp4')]
 
 
-@pytest.fixture
-def downloader_fix(tmpdir):
-    downloader = AsyncDownloader()
-    for link in links:
-        downloader.download_link(link, py.path(tmpdir).joinpath(str(random.randint(1, 10000)) + '.mp4'))
-    return downloader
-
-
-def test_downloads_correctly(downloader_fix):
-    downloader_fix.run()
+def test_downloads_single_file_correctly(tmpdir, event_loop):
+    downloader = AsyncDownloader(loop=event_loop)
+    path = str(Path(tmpdir).join(str(random.randint(1, 10000)) + '.mp4'))
+    downloader.download_link(links[1], path)
+    downloader.run()
 
