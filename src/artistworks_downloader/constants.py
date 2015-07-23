@@ -9,5 +9,6 @@ ARTISTWORKS_MASTERCLASS_BASE = 'http://artistworks.com/masterclass/'
 DEFAULT_OUTPUT_DIRECTORY = str(Path(os.path.expanduser('~')).joinpath('ArtistWorks'))
 
 MAX_CONCURRENT_DOWNLOADS = 5
+MAX_RETRIES = 5
 
 LOG_PATH = str(Path(__file__).parent.joinpath('artistwork_downloader.log'))

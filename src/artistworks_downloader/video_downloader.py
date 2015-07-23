@@ -7,7 +7,7 @@ import aiohttp
 import logbook
 import tqdm
 
-from .constants import MAX_CONCURRENT_DOWNLOADS, LOG_PATH
+from .constants import MAX_CONCURRENT_DOWNLOADS, LOG_PATH, MAX_RETRIES
 
 logger = logbook.Logger(__name__)
 logger.handlers.append(logbook.FileHandler(LOG_PATH, bubble=True))
@@ -24,26 +24,53 @@ class AsyncDownloader(object):
         self.sem = asyncio.Semaphore(MAX_CONCURRENT_DOWNLOADS)
 
     @asyncio.coroutine
-    def async_download_video(self, video_url, chunk_size=1024, folder=r'C:\Temp', filename=''):
+    def async_download_video(self, video_url, chunk_size=1024, folder=r'C:\Temp', filename='', retry_count=0):
+        if retry_count > 0:
+            logger.info('Retrying {} for the {} time'.format(video_url, retry_count))
+
         with aiohttp.ClientSession(loop=self.loop) as session, (yield from self.sem):
             try:
                 vid = yield from session.get(video_url)
                 if not filename:
                     filename = video_url.split('/')[-1]
-            except Exception as exc:
-                logger.exception(exc)
+            except Exception:
+
+                if retry_count >= MAX_RETRIES:
+                    logger.exception('Max retries reached, exiting!')
+                    raise
+
                 logger.error('Failure trying to download from {}, going to retry later..'.format(video_url))
-                self.done[video_url] = False
+                yield from asyncio.sleep(20)
+                task = asyncio.Task(self.async_download_video(video_url=video_url,
+                                                              folder=str(folder),
+                                                              filename=filename,
+                                                              retry_count=retry_count+1))
+                task.add_done_callback(self.tasks.remove)
+                self.tasks.add(task)
+                self.sem.release()
                 return
 
             with open(os.path.join(folder, filename), 'wb') as fd:
                 while True:
                     try:
                         chunk = yield from vid.content.read(chunk_size)
-                    except Exception as exc:
-                        logger.exception(exc)
+                    except Exception:
+
+                        if retry_count >= MAX_RETRIES:
+                            logger.exception('Max retries reached, exiting!')
+                            raise
+
                         logger.error('Failure trying to download from {}, going to retry later..'.format(video_url))
-                        self.done[video_url] = False
+                        yield from asyncio.sleep(20)
+                        task = asyncio.Task(self.async_download_video(video_url=video_url,
+                                                                      folder=str(folder),
+                                                                      filename=filename))
+                        task.add_done_callback(self.tasks.remove)
+                        self.tasks.add(task)
+                        os.remove(os.path.join(folder, filename))
+                        self.sem.release()
+                        return
+
                     if not chunk:
                         break
                     fd.write(chunk)
