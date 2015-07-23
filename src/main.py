@@ -24,6 +24,8 @@ parser.add_argument('--use_firefox', default=False, action='store_true',
                     help='whether to use firefox instead of chrome webdriver')
 parser.add_argument('--use_virtual_display', default=False, action='store_true',
                     help='whether to use a virtual display for running in headless mode (linux only)')
+parser.add_argument('--resume', default=False, action='store_true',
+                    help='simply resume downloading, dont connect to artistworks')
 
 links_group = parser.add_mutually_exclusive_group(required=True)
 links_group.add_argument('--department', type=int,
@@ -55,7 +57,9 @@ def main():
         display.start()
 
     scraper = ArtistWorkScraper(fetch_extras=args.fetch_extras, use_firefox=args.use_firefox)
-    scraper.login_to_artistworks(username=args.username, password=args.password)
+
+    if not args.resume:
+        scraper.login_to_artistworks(username=args.username, password=args.password)
 
     if args.only_lessons:
         lesson_ids = args.only_lessons

@@ -67,6 +67,7 @@ class AsyncDownloader(object):
                                                                       filename=filename))
                         task.add_done_callback(self.tasks.remove)
                         self.tasks.add(task)
+                        fd.close()
                         os.remove(os.path.join(folder, filename))
                         self.sem.release()
                         return
