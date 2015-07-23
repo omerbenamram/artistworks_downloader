@@ -1,3 +1,4 @@
+import contextlib
 import os
 import asyncio
 from pathlib import Path
@@ -7,7 +8,7 @@ import aiohttp
 import logbook
 import tqdm
 
-from .constants import MAX_CONCURRENT_DOWNLOADS, LOG_PATH, MAX_RETRIES
+from .constants import MAX_CONCURRENT_DOWNLOADS, LOG_PATH, MAX_RETRIES, RETRY_DURATION
 
 logger = logbook.Logger(__name__)
 logger.handlers.append(logbook.FileHandler(LOG_PATH, bubble=True))
@@ -40,7 +41,7 @@ class AsyncDownloader(object):
                     raise
 
                 logger.error('Failure trying to download from {}, going to retry later..'.format(video_url))
-                yield from asyncio.sleep(20)
+                yield from asyncio.sleep(RETRY_DURATION)
                 task = asyncio.Task(self.async_download_video(video_url=video_url,
                                                               folder=str(folder),
                                                               filename=filename,
@@ -50,7 +51,7 @@ class AsyncDownloader(object):
                 self.sem.release()
                 return
 
-            with open(os.path.join(folder, filename), 'wb') as fd:
+            with open(os.path.join(folder, filename), 'wb') as fd, contextlib.closing(vid):
                 while True:
                     try:
                         chunk = yield from vid.content.read(chunk_size)
@@ -61,14 +62,13 @@ class AsyncDownloader(object):
                             raise
 
                         logger.error('Failure trying to download from {}, going to retry later..'.format(video_url))
-                        yield from asyncio.sleep(20)
+                        yield from asyncio.sleep(RETRY_DURATION)
                         task = asyncio.Task(self.async_download_video(video_url=video_url,
                                                                       folder=str(folder),
                                                                       filename=filename))
                         task.add_done_callback(self.tasks.remove)
                         self.tasks.add(task)
-                        fd.close()
-                        os.remove(os.path.join(folder, filename))
+                        self.loop.create_task(self.remove_partial_file(os.path.join(folder, filename)))
                         self.sem.release()
                         return
 
@@ -76,10 +76,13 @@ class AsyncDownloader(object):
                         break
                     fd.write(chunk)
 
-            vid.close()
-
         logger.info('Finished downloading file {}'.format(filename))
         self.done[video_url] = True
+
+    @asyncio.coroutine
+    def remove_partial_file(self, file_path):
+        yield
+        os.remove(file_path)
 
     @asyncio.coroutine
     def wait_with_progress(self):
