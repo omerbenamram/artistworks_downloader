@@ -39,14 +39,8 @@ logger.handlers.append(logbook.StderrHandler())
 
 args = parser.parse_args()
 
-LESSONS_DB_PATH = str(Path(args.output_dir).joinpath('lessons.db'))
-MASTERCLASSES_DB_PATH = str(Path(args.output_dir).joinpath('masterclasses.db'))
-
 if not os.path.exists(args.output_dir):
     os.makedirs(args.output_dir)
-
-lessons_db = shelve.open(LESSONS_DB_PATH)
-masterclasses_db = shelve.open(MASTERCLASSES_DB_PATH)
 
 
 def main():
@@ -67,6 +61,9 @@ def main():
     else:
         department_name = scraper.get_department_name(args.department)
         lesson_ids = scraper.get_all_lesson_ids_for_department(args.department)
+
+    lessons_db = shelve.open(os.path.join(args.output_dir, department_name + '_lessons.db'))
+    masterclasses_db = shelve.open(os.path.join(args.output_dir, department_name + '_masterclasses.db'))
 
     for lesson_id in lesson_ids:
         if lesson_id not in lessons_db:
