@@ -26,6 +26,8 @@ parser.add_argument('--use_virtual_display', default=False, action='store_true',
                     help='whether to use a virtual display for running in headless mode (linux only)')
 parser.add_argument('--resume', default=False, action='store_true',
                     help='simply resume downloading, dont connect to artistworks')
+parser.add_argument('--root_folder', type=str, required=True,
+                    help="Name of root folder to save files in (Artist's name for example)")
 
 links_group = parser.add_mutually_exclusive_group(required=True)
 links_group.add_argument('--department', type=int,
@@ -79,7 +81,7 @@ def main():
     downloader = AsyncDownloader()
 
     for lesson in lessons_db.values():
-        lesson_output_folder_path = Path(args.output_dir).joinpath('Paul Gilbert').joinpath(department_name).joinpath(
+        lesson_output_folder_path = Path(args.output_dir).joinpath(args.root_folder).joinpath(department_name).joinpath(
             get_valid_filename(lesson.name))
 
         for lesson_link in lesson.links:
