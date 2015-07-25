@@ -146,6 +146,5 @@ class ArtistWorkScraper(object):
 
         return lesson_ids
 
-
-def exit(self):
-    self.driver.close()
+    def exit(self):
+        self.driver.close()
