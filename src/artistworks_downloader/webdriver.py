@@ -1,4 +1,5 @@
 from collections import namedtuple
+import contextlib
 import re
 import time
 
@@ -132,8 +133,12 @@ class ArtistWorkScraper(object):
         if not self.driver.current_url == (ARTISTWORKS_DEPARTMENT_BASE + str(department_id)):
             self.driver.get(ARTISTWORKS_DEPARTMENT_BASE + str(department_id))
 
-        WebDriverWait(self.driver, 60).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, '#media-group-table > table.sticky-enabled.sticky-table')))
+        with contextlib.suppress(TimeoutException):
+            # this is somewhat of an improved sleep (sometimes the table is different)
+            WebDriverWait(self.driver, 20).until(
+                EC.presence_of_element_located(
+                    (By.CSS_SELECTOR, '#media-group-table > table.sticky-enabled.sticky-table')))
+
         content = self.driver.page_source
         soup = BeautifulSoup(content)
         lesson_ids = map(lambda x: re.findall('\d+', x['href'])[0],
@@ -141,5 +146,6 @@ class ArtistWorkScraper(object):
 
         return lesson_ids
 
-    def exit(self):
-        self.driver.close()
+
+def exit(self):
+    self.driver.close()
