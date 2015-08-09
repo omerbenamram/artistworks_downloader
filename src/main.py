@@ -1,3 +1,5 @@
+from __future__ import unicode_literals, absolute_import
+
 import argparse
 import os
 import shelve
@@ -8,6 +10,7 @@ import logbook
 from artistworks_downloader.constants import DEFAULT_OUTPUT_DIRECTORY, LOG_PATH
 from artistworks_downloader.webdriver import ArtistWorkScraper
 from artistworks_downloader.video_downloader import AsyncDownloader, get_valid_filename
+from artistworks_downloader.unite import unite_ts_videos
 
 parser = argparse.ArgumentParser(description='Grabs videos from artistworks')
 parser.add_argument('--username', type=str, required=True,
@@ -96,4 +99,8 @@ def main():
 
     downloader.run()
 
+    unite_ts_videos(os.path.join(args.output_dir, args.root_folder))
+
     scraper.exit()
+
+

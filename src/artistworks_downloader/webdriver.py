@@ -1,3 +1,5 @@
+from __future__ import unicode_literals, absolute_import
+
 from collections import namedtuple
 import contextlib
 import re
@@ -6,9 +8,6 @@ import time
 import logbook
 from bs4 import BeautifulSoup
 import m3u8 as m3u8
-import requests
-from pies import *
-
 from selenium.common.exceptions import TimeoutException, WebDriverException
 from selenium.webdriver import Chrome, Firefox
 from selenium.webdriver.common.by import By
@@ -97,7 +96,7 @@ class ArtistWorkScraper(object):
         for element in elements:
             link = self._get_video_link_for_element(element)
             video_parts = []
-            link_base_name = element.text or lesson_name_element.text
+            link_base_name = lesson_name_element.text if element.text.strip() == '' else element.text
             if link.endswith('m3u8'):
                 logger.info('Got playlist instead of video, handling')
                 video_parts = self._handle_playlist(link)

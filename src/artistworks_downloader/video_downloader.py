@@ -1,3 +1,5 @@
+from __future__ import unicode_literals, absolute_import
+
 import contextlib
 import os
 import asyncio
@@ -97,7 +99,7 @@ class AsyncDownloader(object):
             os.makedirs(str(output_folder_path))
 
         ext = link.link.split('.')[-1]
-        filename = get_valid_filename(link.name) + ext
+        filename = get_valid_filename(link.name) + '.{}'.format(ext)
 
         if output_folder_path.joinpath(filename).exists():
             logger.debug('file {} exists in disk, not downloading'.format(filename))
