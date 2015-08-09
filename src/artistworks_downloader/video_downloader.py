@@ -96,7 +96,8 @@ class AsyncDownloader(object):
         if not output_folder_path.exists():
             os.makedirs(str(output_folder_path))
 
-        filename = get_valid_filename(link.name) + '.mp4'
+        ext = link.link.split('.')[-1]
+        filename = get_valid_filename(link.name) + ext
 
         if output_folder_path.joinpath(filename).exists():
             logger.debug('file {} exists in disk, not downloading'.format(filename))

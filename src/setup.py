@@ -12,5 +12,5 @@ setup(
         'console_scripts': [
             'artistworks_downloader = main:main',
         ],
-    }, requires=['selenium', 'logbook', 'aiohttp', 'tqdm', 'pyvirtualdisplay']
+    }, requires=['selenium', 'logbook', 'aiohttp', 'tqdm', 'pyvirtualdisplay', 'm3u8', 'requests']
 )

@@ -5,6 +5,10 @@ import time
 
 import logbook
 from bs4 import BeautifulSoup
+import m3u8 as m3u8
+import requests
+from pies import *
+
 from selenium.common.exceptions import TimeoutException, WebDriverException
 from selenium.webdriver import Chrome, Firefox
 from selenium.webdriver.common.by import By
@@ -82,14 +86,28 @@ class ArtistWorkScraper(object):
         lesson_name_element = self.driver.find_element_by_xpath('//*[@id="tabs-wrapper"]/h2')
         lesson_links = []
         try:
+            logger.debug('Looking for playlist')
             elements = WebDriverWait(self.driver, 15).until(
                 EC.presence_of_all_elements_located((By.CLASS_NAME, 'playlist-item')))
         except TimeoutException:
+            logger.debug('playlist element not found, looking for single player element')
             elements = WebDriverWait(self.driver, 15).until(
                 EC.presence_of_all_elements_located((By.ID, 'player0_wrapper')))
 
         for element in elements:
-            lesson_links.append(LessonLink(element.text, self._get_video_link_for_element(element)))
+            link = self._get_video_link_for_element(element)
+            video_parts = []
+            link_base_name = element.text or lesson_name_element.text
+            if link.endswith('m3u8'):
+                logger.info('Got playlist instead of video, handling')
+                video_parts = self._handle_playlist(link)
+
+            if video_parts:
+                for i, part in enumerate(video_parts):
+                    lesson_links.append(LessonLink(link_base_name + '_part{}'.format(i), part))
+            else:
+                lesson_links.append(LessonLink(link_base_name, self._get_video_link_for_element(element)))
+
             if not self.fetch_extras:
                 break
 
@@ -101,7 +119,7 @@ class ArtistWorkScraper(object):
         return Lesson(lesson_id, lesson_name_element.text, lesson_links, masterclasses_ids)
 
     def _get_video_link_for_element(self, element):
-        logger.info('grabbing links for element {}'.format(element))
+        logger.info('grabbing links for element {}'.format(element.text))
         element.click()
         # small sleep is still needed for some js to initialize
         i = 0
@@ -121,6 +139,15 @@ class ArtistWorkScraper(object):
 
         logger.info('found link {}'.format(link))
         return link
+
+    @staticmethod
+    def _handle_playlist(playlist_link):
+        playlist = m3u8.load(playlist_link)
+        highest_quality_video = max(playlist.playlists, key=lambda p: p.stream_info.resolution[0])
+        segments = m3u8.load(highest_quality_video.absolute_uri)
+        videos = [segment.absolute_uri for segment in segments.segments]
+        logger.info('resolved playlist {} into {} videos'.format(playlist_link, len(videos)))
+        return videos
 
     def get_department_name(self, department_id):
         if not self.driver.current_url == (ARTISTWORKS_DEPARTMENT_BASE + str(department_id)):
