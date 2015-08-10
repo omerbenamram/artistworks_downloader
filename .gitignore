@@ -2,3 +2,5 @@
 *.pyc
 src/artistworks_downloader.egg-info/
 src/artistworks_downloader/*.db.*
+
+src/artistworks_downloader/*.log

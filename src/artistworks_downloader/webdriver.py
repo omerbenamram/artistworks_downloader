@@ -107,13 +107,15 @@ class ArtistWorkScraper(object):
             else:
                 lesson_links.append(LessonLink(link_base_name, self._get_video_link_for_element(element)))
 
-            if not self.fetch_extras:
-                break
-
         content = self.driver.page_source
         soup = BeautifulSoup(content)
         masterclasses_ids = list(map(lambda x: re.findall('\d+', x['href'])[0],
                                      soup.find_all('a', href=re.compile('/masterclass/(\d+)'))))
+
+        if self.fetch_extras:
+            logger.debug('Looking for pdf materials to download')
+            pdf_links = map(lambda x: x['href'], soup.find_all('a', href=re.compile('.+\.pdf')))
+            lesson_links.extend([LessonLink(link.split('/')[-1], link) for link in pdf_links])
 
         return Lesson(lesson_id, lesson_name_element.text, lesson_links, masterclasses_ids)
 
