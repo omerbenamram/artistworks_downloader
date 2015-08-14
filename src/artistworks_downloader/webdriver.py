@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, absolute_import
 
-from collections import namedtuple
+from collections import namedtuple, OrderedDict
 import contextlib
 import re
 import time
@@ -169,10 +169,14 @@ class ArtistWorkScraper(object):
 
         content = self.driver.page_source
         soup = BeautifulSoup(content)
-        lesson_ids = map(lambda x: re.findall('\d+', x['href'])[0],
-                         soup.find_all('a', href=re.compile('/lesson/(\d+)')))
+        lessons = OrderedDict()
+        links = soup.find_all('a', href=re.compile('/lesson/(\d+)'))
+        for link in links:
+            lesson_id = re.findall('\d+', link['href'])[0]
+            name = link.text
+            lessons[lesson_id] = name
 
-        return lesson_ids
+        return lessons
 
     def exit(self):
         self.driver.close()

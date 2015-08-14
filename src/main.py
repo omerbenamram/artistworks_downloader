@@ -65,7 +65,19 @@ def main():
         department_name = 'Misc lessons'
     else:
         department_name = scraper.get_department_name(args.department)
-        lesson_ids = scraper.get_all_lesson_ids_for_department(args.department)
+        lessons = scraper.get_all_lesson_ids_for_department(args.department)
+        lesson_ids = lessons.keys()
+
+        # Create nice txt file with lessons info
+        output_path = Path(args.output_dir).joinpath(args.root_folder).joinpath(department_name)
+        os.makedirs(str(output_path), exist_ok=True)
+        f = Path(args.output_dir).joinpath(args.root_folder).joinpath(department_name).joinpath('Lessons.txt').open('w')
+        f.write('Lessons for {}'.format(department_name))
+        f.write('\r\n')
+        for i, lesson in enumerate(lessons):
+            f.write('{id}. {name}'.format(id=i, name=lessons[lesson]))
+            f.write('\r\n')
+        f.close()
 
     lessons_db = shelve.open(os.path.join(args.output_dir, department_name + '_lessons.db'))
     masterclasses_db = shelve.open(os.path.join(args.output_dir, department_name + '_masterclasses.db'))

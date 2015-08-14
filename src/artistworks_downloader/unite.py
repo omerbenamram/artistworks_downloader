@@ -5,6 +5,7 @@ import itertools
 import subprocess
 
 import logbook
+
 from artistworks_downloader.constants import LOG_PATH
 
 __author__ = 'Omer'
@@ -12,6 +13,7 @@ __author__ = 'Omer'
 logger = logbook.Logger(__name__)
 logger.handlers.append(logbook.FileHandler(LOG_PATH, bubble=True, level=logbook.DEBUG))
 logger.handlers.append(logbook.StderrHandler())
+
 
 def unite_ts_videos(folder, delete_original=True):
     for r, d, files in os.walk(folder):
@@ -35,7 +37,9 @@ def unite_ts_videos(folder, delete_original=True):
 
             logger.debug('Calling ffmpeg on file in {} , output {}'.format(file_list_path, output_path))
             try:
-                subprocess.check_call(['ffmpeg', '-f', 'concat', '-i', file_list_path, '-bsf:a', 'aac_adtstoasc', '-c', 'copy', output_path])
+                subprocess.check_call(
+                    ['ffmpeg', '-f', 'concat', '-i', file_list_path, '-bsf:a', 'aac_adtstoasc', '-c', 'copy',
+                     output_path])
             except subprocess.CalledProcessError as e:
                 logger.exception(e)
                 delete_original = False
