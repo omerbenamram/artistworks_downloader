@@ -13,7 +13,7 @@ logger = logbook.Logger(__name__)
 
 def unite_ts_videos(folder, delete_original=True):
     for r, d, files in os.walk(folder):
-        it = itertools.groupby(files, lambda x: x.split('_part')[0])
+        it = itertools.groupby(sorted(files), lambda x: x.split('_part')[0])
         for group, file_list in it:
 
             file_list = list(file_list)  # don't exhaust iterator
