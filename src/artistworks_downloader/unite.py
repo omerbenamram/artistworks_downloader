@@ -5,11 +5,13 @@ import itertools
 import subprocess
 
 import logbook
+from artistworks_downloader.constants import LOG_PATH
 
 __author__ = 'Omer'
 
 logger = logbook.Logger(__name__)
-
+logger.handlers.append(logbook.FileHandler(LOG_PATH, bubble=True, level=logbook.DEBUG))
+logger.handlers.append(logbook.StderrHandler())
 
 def unite_ts_videos(folder, delete_original=True):
     for r, d, files in os.walk(folder):
@@ -38,10 +40,6 @@ def unite_ts_videos(folder, delete_original=True):
                 logger.exception(e)
                 delete_original = False
 
-            # ffmpeg = subprocess.Popen(
-            #     ['ffmpeg', '-f', 'concat', '-i', file_list_path, '-bsf:a', 'aac_adtstoasc', '-c', 'copy', output_path],
-            #     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            # _, _ = ffmpeg.communicate()
             os.remove(file_list_path)
 
             if delete_original:

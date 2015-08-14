@@ -13,7 +13,7 @@ import tqdm
 from .constants import MAX_CONCURRENT_DOWNLOADS, LOG_PATH, MAX_RETRIES, RETRY_DURATION
 
 logger = logbook.Logger(__name__)
-logger.handlers.append(logbook.FileHandler(LOG_PATH, bubble=True))
+logger.handlers.append(logbook.FileHandler(LOG_PATH, bubble=True, level=logbook.DEBUG))
 logger.handlers.append(logbook.StderrHandler())
 
 
