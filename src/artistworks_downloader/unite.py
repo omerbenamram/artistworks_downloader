@@ -11,7 +11,7 @@ __author__ = 'Omer'
 logger = logbook.Logger(__name__)
 
 
-def unite_ts_videos(folder):
+def unite_ts_videos(folder, delete_original=True):
     for r, d, files in os.walk(folder):
         it = itertools.groupby(files, lambda x: x.split('_part')[0])
         for group, file_list in it:
@@ -32,11 +32,18 @@ def unite_ts_videos(folder):
                     l.write('\r\n')
 
             logger.debug('Calling ffmpeg on file in {} , output {}'.format(file_list_path, output_path))
-            ffmpeg = subprocess.Popen(
-                ['ffmpeg', '-f', 'concat', '-i', file_list_path, '-bsf:a', 'aac_adtstoasc', '-c', 'copy', output_path],
-                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            _, _ = ffmpeg.communicate()
+            try:
+                subprocess.check_call(['ffmpeg', '-f', 'concat', '-i', file_list_path, '-bsf:a', 'aac_adtstoasc', '-c', 'copy', output_path])
+            except subprocess.CalledProcessError as e:
+                logger.exception(e)
+                delete_original = False
+
+            # ffmpeg = subprocess.Popen(
+            #     ['ffmpeg', '-f', 'concat', '-i', file_list_path, '-bsf:a', 'aac_adtstoasc', '-c', 'copy', output_path],
+            #     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            # _, _ = ffmpeg.communicate()
             os.remove(file_list_path)
-            
-            for f in file_paths:
-                os.remove(f)
+
+            if delete_original:
+                for f in file_paths:
+                    os.remove(f)

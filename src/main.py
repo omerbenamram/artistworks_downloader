@@ -39,7 +39,7 @@ links_group.add_argument('--only_lessons', type=str, nargs='*',
                          help='download only specified lessons')
 
 logger = logbook.Logger(__name__)
-logger.handlers.append(logbook.FileHandler(LOG_PATH, bubble=True))
+logger.handlers.append(logbook.FileHandler(LOG_PATH, bubble=True, level='DEBUG'))
 logger.handlers.append(logbook.StderrHandler())
 
 args = parser.parse_args()
