@@ -112,7 +112,9 @@ class AsyncDownloader(object):
         self.tasks.add(task)
 
     def run(self):
-        self.loop.run_until_complete(asyncio.wait(self.tasks))
+        if self.tasks:
+            self.loop.run_until_complete(asyncio.wait(self.tasks))
+        return
 
 
 def get_valid_filename(s):
