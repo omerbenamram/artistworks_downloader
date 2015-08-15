@@ -86,11 +86,6 @@ class AsyncDownloader(object):
         yield
         os.remove(file_path)
 
-    @asyncio.coroutine
-    def wait_with_progress(self):
-        for f in tqdm.tqdm(asyncio.as_completed(self.tasks), total=len(self.tasks)):
-            yield from f
-
     def download_link(self, link, output_folder_path):
         if not isinstance(output_folder_path, Path):
             output_folder_path = Path(output_folder_path)
@@ -113,7 +108,7 @@ class AsyncDownloader(object):
         self.tasks.add(task)
 
     def run(self):
-        self.loop.run_until_complete(self.wait_with_progress())
+        self.loop.run_until_complete(asyncio.wait(self.tasks))
 
 
 def get_valid_filename(s):
