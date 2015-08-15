@@ -4,8 +4,10 @@ from collections import namedtuple, OrderedDict
 import contextlib
 import re
 import time
+from urllib.error import URLError
 
 import logbook
+from retry import retry
 from bs4 import BeautifulSoup
 import m3u8 as m3u8
 from selenium.common.exceptions import TimeoutException, WebDriverException
@@ -142,6 +144,7 @@ class ArtistWorkScraper(object):
         return link
 
     @staticmethod
+    @retry(URLError, tries=10, delay=5)
     def _handle_playlist(playlist_link):
         playlist = m3u8.load(playlist_link)
         highest_quality_video = max(playlist.playlists, key=lambda p: p.stream_info.resolution[0])
