@@ -38,11 +38,13 @@ class AsyncDownloader(object):
                     filename = video_url.split('/')[-1]
             except Exception:
 
+                logger.error('Error trying to read url {}'.format(video_url))
                 if retry_count >= MAX_RETRIES:
                     logger.exception('Max retries reached, exiting!')
                     raise
 
                 logger.error('Failure trying to download from {}, going to retry later..'.format(video_url))
+                logger.debug('sleeping for {}'.format(RETRY_DURATION))
                 yield from asyncio.sleep(RETRY_DURATION)
                 task = asyncio.Task(self.async_download_video(video_url=video_url,
                                                               folder=str(folder),
@@ -59,11 +61,13 @@ class AsyncDownloader(object):
                         chunk = yield from vid.content.read(chunk_size)
                     except Exception:
 
+                        logger.error('Error in midst of reading from stream {}'.format(video_url))
                         if retry_count >= MAX_RETRIES:
                             logger.exception('Max retries reached, exiting!')
                             raise
 
                         logger.error('Failure trying to download from {}, going to retry later..'.format(video_url))
+                        logger.debug('sleeping for {}'.format(RETRY_DURATION))
                         yield from asyncio.sleep(RETRY_DURATION)
                         task = asyncio.Task(self.async_download_video(video_url=video_url,
                                                                       folder=str(folder),
