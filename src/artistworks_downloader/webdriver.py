@@ -144,7 +144,7 @@ class ArtistWorkScraper(object):
         return link
 
     @staticmethod
-    @retry(URLError, tries=10, delay=5)
+    @retry(URLError, tries=10, delay=5, logger=logger)
     def _handle_playlist(playlist_link):
         playlist = m3u8.load(playlist_link)
         highest_quality_video = max(playlist.playlists, key=lambda p: p.stream_info.resolution[0])
