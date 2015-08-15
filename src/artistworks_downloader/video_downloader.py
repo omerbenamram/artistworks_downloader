@@ -29,7 +29,7 @@ class AsyncDownloader(object):
     @asyncio.coroutine
     def async_download_video(self, video_url, chunk_size=1024, folder=r'C:\Temp', filename='', retry_count=0):
         if retry_count > 0:
-            logger.info('Retrying {} for the {} time'.format(video_url, retry_count))
+            logger.info('going to retry {} for the {} time'.format(video_url, retry_count + 1))
 
         with aiohttp.ClientSession(loop=self.loop) as session, (yield from self.sem):
             try:
