@@ -39,8 +39,8 @@ def unite_ts_videos(folder, delete_original=True):
 
             output_path = os.path.join(r, group + '.mp4')
             with open(file_list_path, 'w') as l:
-                for f in file_list:
-                    print("file {}".format(repr((os.path.join(r, f)))), file=l)
+                for f in sorted(file_paths, key=key_func):
+                    print("file {}".format(repr(f)), file=l)
                     l.write('\r\n')
 
             logger.debug('Calling ffmpeg on file in {} , output {}'.format(file_list_path, output_path))
