@@ -173,7 +173,8 @@ class ArtistWorkScraper(object):
         content = self.driver.page_source
         soup = BeautifulSoup(content)
         lessons = OrderedDict()
-        links = soup.find_all('a', href=re.compile('/lesson/(\d+)'))
+        elem = soup.find('div', id='media-group-table')
+        links = elem.find_all('a', href=re.compile('/lesson/(\d+)'))
         for link in links:
             lesson_id = re.findall('\d+', link['href'])[0]
             name = link.text
