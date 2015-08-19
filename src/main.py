@@ -27,8 +27,6 @@ parser.add_argument('--use_firefox', default=False, action='store_true',
                     help='whether to use firefox instead of chrome webdriver')
 parser.add_argument('--use_virtual_display', default=False, action='store_true',
                     help='whether to use a virtual display for running in headless mode (linux only)')
-parser.add_argument('--resume', default=False, action='store_true',
-                    help='simply resume downloading, dont connect to artistworks')
 parser.add_argument('--root_folder', type=str, required=True,
                     help="Name of root folder to save files in (Artist's name for example)")
 
@@ -57,8 +55,7 @@ def main():
 
     scraper = ArtistWorkScraper(fetch_extras=args.fetch_extras, use_firefox=args.use_firefox)
 
-    if not args.resume:
-        scraper.login_to_artistworks(username=args.username, password=args.password)
+    scraper.login_to_artistworks(username=args.username, password=args.password)
 
     if args.only_lessons:
         lesson_ids = args.only_lessons
