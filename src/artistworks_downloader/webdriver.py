@@ -70,12 +70,24 @@ class ArtistWorkScraper(object):
         try:
             elements = WebDriverWait(self.driver, 15).until(
                 EC.presence_of_all_elements_located((By.CLASS_NAME, 'playlist-item')))
+
+            # a lousy hack for the missing elements
+            elements = [element for element in elements if element.text]
+            if not elements:
+                time.sleep(5)
+                elements = WebDriverWait(self.driver, 15).until(
+                    EC.presence_of_all_elements_located((By.CLASS_NAME, 'playlist-item')))
+
+            if not elements:
+                raise RuntimeError('Unhandled Masterclass! Breaking.')
+
+        # timeout is thrown when there is no playlist - hence only video with no response
         except TimeoutException:
             # for masterclass, i don't care about those without artist response
             return Masterclass(masterclass_id, lesson_name_element.text, lesson_links)
 
         for element in elements:
-            if element.text is not None:
+            if element.text:
                 lesson_links.append(LessonLink(element.text, self._get_video_link_for_element(element)))
             else:
                 logger.debug('Found empty playlist element {} - skipping it'.format(element.id))
