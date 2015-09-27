@@ -75,7 +75,10 @@ class ArtistWorkScraper(object):
             return Masterclass(masterclass_id, lesson_name_element.text, lesson_links)
 
         for element in elements:
-            lesson_links.append(LessonLink(element.text, self._get_video_link_for_element(element)))
+            if element.text is not None:
+                lesson_links.append(LessonLink(element.text, self._get_video_link_for_element(element)))
+            else:
+                logger.debug('Found empty playlist element {} - skipping it'.format(element.id))
 
         return Masterclass(masterclass_id, lesson_name_element.text, lesson_links)
 
