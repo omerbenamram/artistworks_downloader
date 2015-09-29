@@ -154,7 +154,7 @@ class ArtistWorkScraper(object):
         while i <= 3:
             try:
                 time.sleep(5)
-                active_player_id = self._get_active_jwplayer_instance()
+                active_player_id = self._get_active_jwplayer_instance() or 0
                 link = self.driver.execute_script(
                     "return jwplayer({player}).getPlaylistItem()['file']".format(player=active_player_id))
                 self.driver.execute_script("return jwplayer({player}).stop()".format(player=active_player_id))
