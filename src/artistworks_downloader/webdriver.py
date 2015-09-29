@@ -81,8 +81,9 @@ class ArtistWorkScraper(object):
         elements = self._fetch_current_page_playlist_elements()
 
         # this is a case with some of the newer players
-        if masterclass_name == self.last_lesson.name:
-            masterclass_name = elements[0].text  # students question name is the masterclass name
+        if self.last_lesson:
+            if masterclass_name == self.last_lesson.name:
+                masterclass_name = elements[0].text  # students question name is the masterclass name
 
         lesson_links = self._handle_elements(elements, lesson_name=masterclass_name)
 
