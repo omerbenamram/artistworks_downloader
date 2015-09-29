@@ -139,7 +139,7 @@ class ArtistWorkScraper(object):
         players = self._get_all_jwplayer_instances()
         for player_id in players:
             state = self.driver.execute_script("return jwplayer({player}).getState()".format(player=player_id))
-            logger.debug('state of player [} is {}'.format(player_id, state))
+            logger.debug('state of player {} is {}'.format(player_id, state))
             if not state == JWPlayerStates.IDLE.value:
                 return player_id
 
