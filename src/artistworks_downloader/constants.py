@@ -12,4 +12,7 @@ MAX_CONCURRENT_DOWNLOADS = 5
 MAX_RETRIES = 5
 RETRY_DURATION = 60
 
-LOG_PATH = str(Path(__file__).parent.joinpath('artistwork_downloader.log'))
+if os.name == 'nt':
+    LOG_PATH = os.path.join(os.path.expandvars('%LOCALAPPDATA%'), 'temp', 'artistworks_downloader.log')
+else:
+    LOG_PATH = os.path.join(os.path.expandvars('/var'), 'log', 'artistworks_downloader.log')
