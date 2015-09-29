@@ -187,7 +187,7 @@ class ArtistWorkScraper(object):
 
         return lesson_links
 
-    @retry(NoElementsException, tries=3, delay=5)
+    @retry(NoElementsException, tries=10, delay=5, jitter=3)
     def _fetch_current_page_playlist_elements(self):
         try:
             logger.debug('Looking for playlist')
