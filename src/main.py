@@ -102,7 +102,11 @@ def main():
         if args.fetch_masterclasses:
             for masterclass_id in lesson.masterclass_ids:
                 masterclass = masterclasses_db[masterclass_id]
-                masterclass_output_folder_path = lesson_output_folder_path.joinpath(masterclass.name)
+                masterclass_output_folder_path = lesson_output_folder_path.joinpath(
+                    get_valid_filename(masterclass.name))
+                if masterclass_output_folder_path.exists():
+                    masterclass_output_folder_path.with_name(
+                        masterclass_output_folder_path.name + 'masterclass_{}'.format(masterclass_id))
                 for masterclass_link in masterclass.links:
                     downloader.download_link(masterclass_link, masterclass_output_folder_path)
 
@@ -111,5 +115,3 @@ def main():
     unite_ts_videos(os.path.join(args.output_dir, args.root_folder))
 
     scraper.exit()
-
-
