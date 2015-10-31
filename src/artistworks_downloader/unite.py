@@ -1,4 +1,5 @@
 from __future__ import unicode_literals, absolute_import, print_function
+from contextlib import suppress
 
 import os
 import itertools
@@ -32,7 +33,14 @@ def unite_ts_videos(folder, delete_original=True):
             # check no parts are missing! (from 0-max)
             # path/blah_part0.ts --> 0
             key_func = lambda x: int(x.split('_part')[1].split('.')[0])
-            highest_part_no = key_func(max(file_paths, key=key_func))
+
+            try:
+                highest_part_no = key_func(max(file_paths, key=key_func))
+            except ValueError as e:
+                # example my_video_part_2.mp4 would throw exception on conversion to int
+                logger.exception(e)
+                continue
+
             if len(file_paths) != (highest_part_no + 1):
                 logger.error('Found missing parts! not uniting!')
                 return
